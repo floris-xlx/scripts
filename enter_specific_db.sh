@@ -1,0 +1,1 @@
+psql -h db.xylex.cloud -U postgres -p 5432 "xylex_cloud"
