@@ -1,0 +1,4 @@
+- go to system settings
+- go to advanced system settigns
+- click on environment variables on the bottom right
+- change all the User and System temp & tmp folderpaths to a custom one
