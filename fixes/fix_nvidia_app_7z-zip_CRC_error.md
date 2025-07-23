@@ -12,3 +12,7 @@ Try this before you do anything else. It's easy. - From your windows search bar 
 WHY THIS WORKED FOR ME: I have heard that one reason these CRC errors are popping up in the NVIDIA installer is that some recent intell chips have cores that are generating this issue. [I can't validate this]. Reducing the number of cores temporarily may let you bypass the core that is causing the software to generate the CRC error.
 
 I went around and around before finding this solution. I uninstalled/reinstalled Nvidia, 7-sip, etc... tried as admin, tried in safe made, did a complete wipe of windows and reloaded - nothing worked for me until i found this. I hope it helps others.
+----
+
+
+FIXED IT for driver 551.52 on X99 Intel 5960X changed from 28 to 26 multiplier by 165Mhz DDR now on 3400 instead of 3600, CPU on 4250 instead of 4600Mhz. Works like a charm. thanks mate
