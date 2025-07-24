@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION pg_schema()
+CREATE OR REPLACE FUNCTION public.pg_schema()
 RETURNS TABLE(table_name text)
 LANGUAGE sql
 AS $$
