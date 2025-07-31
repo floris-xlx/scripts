@@ -1,0 +1,4 @@
+- Search for Control Panel
+- Look for programs, right under that you will see `disable windows features`
+- Find `Hyper-v`, `Windows hypervisor platform` and disable them
+- Restart
