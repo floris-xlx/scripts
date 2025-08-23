@@ -1,69 +1,59 @@
 #!/bin/bash
+set -euo pipefail
 
-# Function to display an error message and exit
 die() {
-  print_red "$1"
+  echo "❌ $1" >&2
   exit 1
 }
 
-# Function to display a message in red color
-print_red() {
-    echo -e "\e[31m$1\e[0m" >&2
-}
+DOMAIN=""
+PORT=""
 
-# Function to display a message in blue color
-print_blue() {
-    echo -e "\e[34m$1\e[0m"
-}
-
-# Function to display a message in green color
-print_green() {
-    echo -e "\e[32m$1\e[0m"
-}
-
-# Parse command line arguments
-for arg in "$@"; do
-  case $arg in
-    --domain=*)
-      DOMAIN="${arg#*=}"
-      shift
+# Parse CLI args
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --domain)
+      DOMAIN="$2"
+      shift 2
       ;;
-    --port=*)
-      PORT="${arg#*=}"
-      shift
+    --port)
+      PORT="$2"
+      shift 2
       ;;
     *)
-      die "Invalid argument: $arg"
+      die "Unknown option: $1. Use --domain <domain> --port <port>"
       ;;
   esac
 done
 
-# Validate input
-if [[ -z "$DOMAIN" || -z "$PORT" ]]; then
-  die "Both --domain and --port must be provided."
-fi
+[[ -z "$DOMAIN" || -z "$PORT" ]] && die "Usage: $0 --domain <domain> --port <port>"
 
-# Check if Nginx is installed
-if ! command -v nginx >/dev/null 2>&1; then
-  die "Nginx is not installed. Please install it before running this script."
-fi
+command -v nginx >/dev/null 2>&1 || die "Nginx is not installed."
+command -v certbot >/dev/null 2>&1 || die "Certbot is not installed."
 
-# Check if Certbot is installed
-if ! command -v certbot >/dev/null 2>&1; then
-  die "Certbot is not installed. Please install it before running this script."
-fi
-
-# Create an Nginx configuration for the domain
 NGINX_CONF="/etc/nginx/sites-available/$DOMAIN"
 NGINX_LINK="/etc/nginx/sites-enabled/$DOMAIN"
 
-sudo cat > "$NGINX_CONF" <<EOL
+# Remove old config
+if [[ -f "$NGINX_CONF" ]]; then
+  echo "⚠️ Existing config found for $DOMAIN, overwriting..."
+  sudo rm -f "$NGINX_CONF" "$NGINX_LINK"
+fi
+
+
+# Create HTTP-only config with webroot path
+sudo mkdir -p /var/www/certbot
+sudo tee "$NGINX_CONF" > /dev/null <<EOL
 server {
     listen 80;
     server_name $DOMAIN;
 
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
     location / {
-        proxy_pass http://localhost:$PORT;
+        proxy_pass http://127.0.0.1:$PORT;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -72,51 +62,55 @@ server {
 }
 EOL
 
-# Enable the site
-sudo ln -s "$NGINX_CONF" "$NGINX_LINK" 2>/dev/null || true
+# Enable site
+sudo ln -s "$NGINX_CONF" "$NGINX_LINK"
 
-# Test the Nginx configuration
-sudo nginx -t || die "Nginx configuration test failed. Please check your configuration."
+# Test & reload Nginx
+sudo nginx -t || { rm -f "$NGINX_CONF" "$NGINX_LINK"; die "Nginx test failed."; }
+sudo systemctl reload nginx
 
-# Reload Nginx
-sudo systemctl reload nginx || die "Failed to reload Nginx."
-
-# Obtain an SSL certificate
-CERTBOT_OUTPUT=$(sudo certbot --nginx -d "$DOMAIN" 2>&1)
-if ! echo "$CERTBOT_OUTPUT" | grep -q "Successfully deployed certificate for $DOMAIN"; then
-  die "Certbot failed to obtain the certificate."
+# Request certificate using webroot
+if ! sudo certbot certonly --webroot -w /var/www/certbot -d "$DOMAIN" --agree-tos --non-interactive -m admin@"$DOMAIN"; then
+  rm -f "$NGINX_CONF" "$NGINX_LINK"
+  sudo systemctl reload nginx
+  die "Certbot failed to obtain certificate."
 fi
 
-# Update the Nginx configuration for SSL
-cat > "$NGINX_CONF" <<EOL
+# Write final HTTPS config
+sudo tee "$NGINX_CONF" > /dev/null <<EOL
 server {
     listen 80;
     server_name $DOMAIN;
     return 301 https://\$host\$request_uri;
 }
-
 server {
     listen 443 ssl;
     server_name $DOMAIN;
 
     ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
+
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
     location / {
-        proxy_pass http://localhost:$PORT;
+        proxy_pass http://127.0.0.1:$PORT;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
+
+        proxy_buffers 8 32k;
+        proxy_buffer_size 64k;
+        client_max_body_size 500M;
     }
 }
 EOL
 
-# Test and reload the updated Nginx configuration
-nginx -t || die "Nginx configuration test failed after adding SSL."
-systemctl reload nginx || die "Failed to reload Nginx after adding SSL."
 
-# Success message
-print_green "SSL certificate created and Nginx configuration updated successfully for $DOMAIN forwarding to localhost:$PORT."
+sudo nginx -t
+sudo systemctl restart nginx
+sudo systemctl daemon-reload
+
+
+
