@@ -1,0 +1,7 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\SystemFileAssociations\.mov\shell\Convert to MP4]
+@="Convert to MP4"
+
+[HKEY_CLASSES_ROOT\SystemFileAssociations\.mov\shell\Convert to MP4\command]
+@="\"C:\\Scripts\\mkv2mp4.bat\" \"%1\""
