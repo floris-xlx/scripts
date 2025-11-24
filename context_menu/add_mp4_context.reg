@@ -1,0 +1,7 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\SystemFileAssociations\.mp4\shell\Convert to MP3]
+@="Convert to MP3"
+
+[HKEY_CLASSES_ROOT\SystemFileAssociations\.mp4\shell\Convert to MP3\command]
+@="\"C:\\Scripts\\convert_to_mp3.bat\" \"%1\""

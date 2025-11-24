@@ -1,0 +1,13 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\SystemFileAssociations\.mp4\shell\Transcribe and Translate]
+@="Transcribe and Translate"
+
+[HKEY_CLASSES_ROOT\SystemFileAssociations\.mp4\shell\Transcribe and Translate\command]
+@="\"C:\\Scripts\\upload_to_api.bat\" \"%1\""
+
+[HKEY_CLASSES_ROOT\SystemFileAssociations\.mp3\shell\Transcribe and Translate]
+@="Transcribe and Translate"
+
+[HKEY_CLASSES_ROOT\SystemFileAssociations\.mp3\shell\Transcribe and Translate\command]
+@="\"C:\\Scripts\\upload_to_api.bat\" \"%1\""

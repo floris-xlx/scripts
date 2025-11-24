@@ -1,0 +1,22 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\SystemFileAssociations\.mkv\shell\ConvertToMP4]
+@="Convert to MP4"
+"MultiSelectModel"="Player"
+
+[HKEY_CLASSES_ROOT\SystemFileAssociations\.mkv\shell\ConvertToMP4\command]
+@="\"C:\\scripts\\mkv2mp4.bat\" %*"
+
+[HKEY_CLASSES_ROOT\SystemFileAssociations\.m4v\shell\ConvertToMP4]
+@="Convert to MP4"
+"MultiSelectModel"="Player"
+
+[HKEY_CLASSES_ROOT\SystemFileAssociations\.m4v\shell\ConvertToMP4\command]
+@="\"C:\\scripts\\mkv2mp4.bat\" %*"
+
+[HKEY_CLASSES_ROOT\SystemFileAssociations\.mov\shell\ConvertToMP4]
+@="Convert to MP4"
+"MultiSelectModel"="Player"
+
+[HKEY_CLASSES_ROOT\SystemFileAssociations\.mov\shell\ConvertToMP4\command]
+@="\"C:\\scripts\\mkv2mp4.bat\" %*"
