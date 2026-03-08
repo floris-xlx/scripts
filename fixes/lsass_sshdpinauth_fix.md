@@ -31,6 +31,10 @@ Faulting application: `lsass.exe`\
 Faulting module: `SshdPinAuthLsa.dll`\
 Exception code: `0xc0000409`
 
+<img width="1707" height="1063" alt="image" src="https://github.com/user-attachments/assets/eed4c3ac-a83d-439c-893c-adf11cb3b17e" />
+
+
+
 Example:
 
     Faulting application name: lsass.exe
