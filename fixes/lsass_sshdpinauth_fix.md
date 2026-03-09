@@ -2,6 +2,8 @@
 
 ## Problem
 
+
+https://learn.microsoft.com/en-us/answers/questions/3894031/c-windowssystem32lsass-exe-failed-with-status-code
 Windows repeatedly displays:
 
     Windows will restart in 1 minute
